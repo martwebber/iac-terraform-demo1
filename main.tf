@@ -1,37 +1,9 @@
-
-# data "aws_region" "current" {}
-
-# resource "aws_vpc_ipam" "test" {
-#   operating_regions {
-#     region_name = data.aws_region.current.name
-#   }
-# }
-
-# resource "aws_vpc_ipam_pool" "test" {
-#   address_family = "ipv4"
-#   ipam_scope_id  = aws_vpc_ipam.test.private_default_scope_id
-#   locale         = data.aws_region.current.name
-# }
-
-# resource "aws_vpc_ipam_pool_cidr" "test" {
-#   ipam_pool_id = aws_vpc_ipam_pool.test.id
-#   cidr         = "172.2.0.0/16"
-# }
-
-# resource "aws_vpc" "test" {
-#   ipv4_ipam_pool_id   = aws_vpc_ipam_pool.test.id
-#   ipv4_netmask_length = 28
-#   depends_on = [
-#     aws_vpc_ipam_pool_cidr.test
-#   ]
-# }
-
 resource "aws_vpc" "demo_vpc" {
     cidr_block = "10.0.0.0/18"
 
     tags = {
         Name = "Demo VPC"
-    }
+    }          
 }
 
 resource "aws_subnet" "public_subnet" {
@@ -166,9 +138,8 @@ resource "aws_security_group" "demo_security_group" {
 }
 
 resource "aws_instance" "demo_ec2_instance" {
-  ami = "ami-0557a15b87f6559cf"
-  instance_type = "t2.micro"
-  #security_groups = [aws_security_group.demo_security_group.name]
+  ami = var.ec2_ami
+  instance_type = var.ec2_instance_type
   subnet_id = aws_subnet.private_subnet.id
   vpc_security_group_ids = [aws_security_group.demo_security_group.id]
   key_name = "terraform-aws-keypair"
