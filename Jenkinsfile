@@ -1,5 +1,9 @@
 pipeline{
     agent any
+    tools {
+        terraform 'terraform'
+}
+
     stages{
         stage('Clean workspace'){
             steps{
@@ -16,7 +20,19 @@ pipeline{
 
         stage('Terraform init'){
             steps{
-                echo 'terraform init...'
+                sh 'terraform init'
+            }
+        }
+
+        ('Terraform validate'){
+            steps{
+                sh 'terraform validate'
+            }
+        }
+
+        stage('Terraform plan'){
+            steps{
+                sh 'terraform plan'
             }
         }
     }
