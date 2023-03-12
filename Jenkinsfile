@@ -9,8 +9,8 @@ pipeline{
 
         stage('Clone repo'){
             steps{
-                echo 'checkout code...'
-                //checkout scmGit(branches: [[name: '*/dev-h']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/martwebber/iac-terraform-demo1.git']])
+                //echo 'checkout code...'
+                checkout scmGit(branches: [[name: '*/dev-h']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/martwebber/iac-terraform-demo1.git']])
             }
         }
 
