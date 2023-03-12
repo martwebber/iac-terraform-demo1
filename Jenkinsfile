@@ -22,7 +22,6 @@ pipeline{
 
         stage('Clone repo'){
             steps{
-                //echo 'checkout code...'
                 checkout scmGit(branches: [[name: '*/dev-h']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/martwebber/iac-terraform-demo1.git']])
             }
         }
@@ -41,8 +40,51 @@ pipeline{
 
         stage('Terraform plan'){
             steps{
-                sh 'terraform plan'
+                sh 'terraform plan --input=false -out tfplan'
+                sh 'terraform show -no-color tfplan > tfplan.txt; ls'
             }
+        }
+
+        stage('Approval'){
+            when{
+                not{
+                    equals expected: true, actual: params.autoApprove
+                }
+            }
+
+            steps{
+                script{
+                    def plan = readFile 'tfplan.txt'
+                    input message: "Do you want to apply the file?", parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                }
+                echo 'Approved'
+            }
+        }
+
+        stage('apply'){
+            steps{
+                sh 'pwd; terraform apply -input=false tfplan'
+            }
+        }
+
+        stage('show'){
+            steps{
+                sh 'pwd; terraform show'
+            }
+        }
+
+        stage('destroy'){
+            steps{
+                sh 'pwd; terraform destroy -input=false tfplan'
+            }
+        }
+    }
+    post{
+        success{
+            echo 'Success!'
+        }
+        failure{
+            echo 'Failure!'
         }
     }
 }
