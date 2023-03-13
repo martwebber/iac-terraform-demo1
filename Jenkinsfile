@@ -75,16 +75,9 @@ pipeline{
 
         stage('destroy'){
             steps{
-                sh 'pwd; terraform destroy -input=false tfplan'
+                sh 'pwd; terraform destroy --auto-approve'
             }
         }
     }
-    post{
-        success{
-            echo 'Success!'
-        }
-        failure{
-            echo 'Failure!'
-        }
-    }
+                
 }
