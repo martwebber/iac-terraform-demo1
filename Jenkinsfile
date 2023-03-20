@@ -55,7 +55,7 @@ pipeline{
 
         stage('apply'){
             steps{
-                sh 'pwd; terraform apply plan'
+                sh 'pwd; terraform apply -input=false lock=false tfplan'
             }
         }
 
