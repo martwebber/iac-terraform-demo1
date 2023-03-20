@@ -50,7 +50,7 @@ pipeline{
                     docker {
                         image 'infracost/infracost:ci-0.9'
                             reuseNode true
-                            args "--user=root --privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=''"
+                            args "--user=mart --privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=''"
                     }
                 }
                 // Set up any required credentials for posting the comment, e.g. GitHub token, GitLab token
