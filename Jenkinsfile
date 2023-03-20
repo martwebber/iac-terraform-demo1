@@ -1,9 +1,5 @@
 pipeline{
     agent any
-    parameters{
-        string(name: 'environment', defaultValue: 'terraform', description: 'Workspace/environment file to use for the deploymet')
-        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating the plan?')
-    }
     tools {
         terraform 'terraform'
 }
@@ -22,7 +18,7 @@ pipeline{
 
         stage('Clone repo'){
             steps{
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/martwebber/iac-terraform-demo1.git']])
+                checkout scmGit(branches: [[name: '*/dev-h']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/martwebber/iac-terraform-demo1.git']])
             }
         }
 
@@ -38,32 +34,28 @@ pipeline{
             }
         }
 
-        stage('Terraform plan'){
-            steps{
-                sh 'terraform plan --input=false -out tfplan'
-                sh 'terraform show -no-color tfplan > tfplan.txt; ls'
-            }
-        }
-
-        stage('Approval'){
-            when{
-                not{
-                    equals expected: true, actual: params.autoApprove
+            stage('Plan') {
+                steps {
+                    sh 'terraform plan -no-color -out plan'
+                    sh 'terraform show plan > plan.txt'
+                    sh 'terraform show -json plan > tfplan.json'
                 }
             }
 
-            steps{
-                script{
-                    def plan = readFile 'tfplan.txt'
-                    input message: "Do you want to apply the file?", parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+            stage('Validate Apply') {
+                steps {
+                    script {
+                        def plan = readFile 'plan.txt'
+                        input message: "Do you want to apply the plan?",
+                        parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                } 
+                    echo 'Apply Accepted'
                 }
-                echo 'Approved'
             }
-        }
 
         stage('apply'){
             steps{
-                sh 'pwd; terraform apply -input=false tfplan'
+                sh 'pwd; terraform apply -input=false plan'
             }
         }
 
