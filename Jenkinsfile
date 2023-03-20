@@ -1,9 +1,5 @@
 pipeline{
     agent any
-    // parameters{
-    //     string(name: 'environment', defaultValue: 'terraform', description: 'Workspace/environment file to use for the deploymet')
-    //     booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating the plan?')
-    // }
     tools {
         terraform 'terraform'
 }
@@ -37,15 +33,8 @@ pipeline{
                 sh 'terraform validate'
             }
         }
-
-        // stage('Terraform plan'){
-        //     steps{
-        //         sh 'terraform plan --input=false -out tfplan'
-        //         sh 'terraform show -no-color tfplan > tfplan.txt; ls'
-        //     }
-        // }
         
-        stage('Plan') {
+        stage('Terraform Plan') {
                 steps {
                     sh 'terraform plan -no-color -out plan'
                     sh 'terraform show plan > plan.txt'
@@ -53,7 +42,6 @@ pipeline{
                 }
             }
 
-        
         stage('Validate Apply') {
                 steps {
                     script {
