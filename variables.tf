@@ -18,6 +18,11 @@ variable "region"{
 #   type = string
 # }
 
+variable "project" {
+  description = "Project name"
+  type= string
+}
+
 variable "ec2_ami" {
   description = "EC2 AMI"
   type = string
@@ -36,66 +41,66 @@ variable "vpc_cidr_block" {
   
 }
 
-variable "vpc_tags" {
-  description = "VPC tags"
+variable "tags" {
+  description = "Tags to be used on the project"
   type = map(any)
   default = {}
 }
 
-variable "public_subnet_tags" {
-  description = "Public subnet tags"
-  type = map(any)
-  default = {}
-}
+# variable "public_subnet_tags" {
+#   description = "Public subnet tags"
+#   type = map(any)
+#   default = {}
+# }
 
-variable "private_subnet_tags" {
-  description = "Private subnet tags"
-  type = map(any)
-  default = {}
-}
+# variable "private_subnet_tags" {
+#   description = "Private subnet tags"
+#   type = map(any)
+#   default = {}
+# }
 
-variable "internet_gateway_tags" {
-  description = "Internet gateway tags"
-  type = map(any)
-  default = {}
-}
+# variable "internet_gateway_tags" {
+#   description = "Internet gateway tags"
+#   type = map(any)
+#   default = {}
+# }
 
-variable "nat_gateway_eip_tags" {
-  description = "NAT gateway elastic IP"
-  type = map(any)
-  default = {}
-}
+# variable "nat_gateway_eip_tags" {
+#   description = "NAT gateway elastic IP"
+#   type = map(any)
+#   default = {}
+# }
 
-variable "nat_gateway_tags" {
-  description = "NAT gateway tags"
-  type = map(any)
-  default = {}
-}
+# variable "nat_gateway_tags" {
+#   description = "NAT gateway tags"
+#   type = map(any)
+#   default = {}
+# }
 
-variable "public_route_table_tags" {
-  description = "Public route table tags"
-  type = map(any)
-  default = {}  
-}
+# variable "public_route_table_tags" {
+#   description = "Public route table tags"
+#   type = map(any)
+#   default = {}  
+# }
 
-variable "private_route_table_tags" {
-  description = "Private route table tags"
-  type = map(any)
-  default = {}
-}
+# variable "private_route_table_tags" {
+#   description = "Private route table tags"
+#   type = map(any)
+#   default = {}
+# }
 
-variable "security_group_tags" {
-  description = "Security group tags"
-  type = map(any)
-  default = {}
-}
+# variable "security_group_tags" {
+#   description = "Security group tags"
+#   type = map(any)
+#   default = {}
+# }
 
-variable "ec2_instance_tags" {
-  description = "EC2 instance tags"
-  type = map(any)
-  default = {} 
+# variable "ec2_instance_tags" {
+#   description = "EC2 instance tags"
+#   type = map(any)
+#   default = {} 
   
-}
+# }
 
 variable "security_group_description" {
   description = "Security group description"

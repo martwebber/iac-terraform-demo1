@@ -1,0 +1,138 @@
+pipeline {
+    agent any
+    tools {
+        terraform 'Terraform Linux'
+    }
+    environment {
+        TF_IN_AUTOMATION    = 'true'
+        DEVELOP_TFVARS      = credentials('DEVELOP_TFVARS')
+        DEVELOP_BACKEND     = credentials('develop_backend')
+        // MASTER_TFVARS       = credentials('MASTER_TFVARS')
+        // MASTER_BACKEND     = credentials('master_backend')
+        AWS_ACCESS_KEY_ID     = credentials('UAT_AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('UAT_AWS_SECRET_ACCESS_KEY')
+        AWS_SESSION_TOKEN     = credentials('UAT_AWS_SESSION_TOKEN') 
+        // PROD_AWS_ACCESS_KEY_ID     = credentials('PROD_AWS_ACCESS_KEY_ID')
+        // PROD_AWS_SECRET_ACCESS_KEY = credentials('PROD_AWS_SECRET_ACCESS_KEY')
+        // PROD_AWS_SESSION_TOKEN     = credentials('PROD_AWS_SESSION_TOKEN')  
+    }
+        stages {
+            stage('CleanWorkspace') {
+                steps {
+                    cleanWs()
+                }
+            }
+            stage('Clone') {
+                steps {
+                    script{
+                        scmVars = checkout(scm)
+                        env.BRANCH_NAME =  scmVars.GIT_BRANCH
+                        env.SHORT_COMMIT = "${scmVars.GIT_COMMIT[0..7]}"
+                        REPO_NAME = scmVars.GIT_URL.replaceFirst(/^.*\/([^\/]+?).git$/, '$1')
+                        DATE = sh(returnStdout: true, script: "date -u +'%Y%m%d'").trim()
+                        if (BRANCH_NAME=="master") {
+                            env.artifact_name = "devsecopstools_master"
+                        }
+                        if (BRANCH_NAME=="develop") {
+                            env.artifact_name = "devsecopstools_develop"
+                        }
+                        stash "stash-${env.SHORT_COMMIT}"
+                    }   
+                }
+            }
+            // init stage
+            stage('Init') {
+                    steps {
+                        script {
+                            if (env.BRANCH_NAME == 'develop'||env.BRANCH_NAME == 'test' ) {
+                                environment {
+                                    AWS_ACCESS_KEY_ID     = credentials('UAT_AWS_ACCESS_KEY_ID')
+                                    AWS_SECRET_ACCESS_KEY = credentials('UAT_AWS_SECRET_ACCESS_KEY')
+                                    AWS_SESSION_TOKEN     = credentials('UAT_AWS_SESSION_TOKEN')
+                                }
+                                sh 'cp $DEVELOP_TFVARS $BRANCH_NAME.tfvars'
+                                sh 'cp $DEVELOP_BACKEND $BRANCH_NAME.tf'
+                            }
+                            else if (env.BRANCH_NAME == 'master') {
+                                environment {
+                                    // PROD_AWS_ACCESS_KEY_ID     = credentials('PROD_AWS_ACCESS_KEY_ID')
+                                    // PROD_AWS_SECRET_ACCESS_KEY = credentials('PROD_AWS_SECRET_ACCESS_KEY')
+                                    // AWS_SESSION_TOKEN     = credentials('PROD_AWS_SESSION_TOKEN')
+                                }
+                                sh 'cp $MASTER_TFVARS $BRANCH_NAME.tfvars'
+                                sh 'cp $MASTER_BACKEND $BRANCH_NAME.tf'
+                            }
+                        }
+                        sh 'terraform init'
+                        sh 'terraform validate'
+                    }
+            }
+            stage('Plan') {
+                steps {
+                    sh 'terraform plan -no-color -var-file="$BRANCH_NAME.tfvars" -out plan'
+                    sh 'terraform show plan > plan.txt'
+                    sh 'terraform show -json plan > tfplan.json'
+                }
+            }
+            stage('infracost') {
+                agent {
+                    docker {
+                        image 'infracost/infracost:ci-0.9'
+                            reuseNode true
+                            args "--user=root --privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=''"
+                    }
+                }
+                // Set up any required credentials for posting the comment, e.g. GitHub token, GitLab token
+                    environment {
+                        INFRACOST_API_KEY = credentials('jenkins-infracost-api-key')
+                    }
+                    steps {
+                        // unstash 'tfplan_json'
+                        sh 'infracost breakdown --path tfplan.json --show-skipped --format html --out-file infracost.html'
+                    }
+            }
+            stage('Security Scan') {
+                agent {
+                        docker {
+                            image 'kennethreitz/pipenv:latest'
+                            reuseNode true
+                            args '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock'
+                            }
+                }
+                steps {
+                    script {
+                                sh "pipenv install"
+                                sh "pipenv run pip install checkov"
+                                sh "pipenv run checkov --directory /home/ec2-user/workspace/  -o junitxml > result.xml || true"
+                                junit "result.xml"
+                                // sh "test ${currentBuild.currentResult} != UNSTABLE"
+                            }
+                }
+            }
+            stage('Validate Apply') {
+                steps {
+                    script {
+                        def plan = readFile 'plan.txt'
+                        input message: "Do you want to apply the plan?",
+                        parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                } 
+                    echo 'Apply Accepted'
+                }
+            }
+            stage('Apply') {
+                steps {
+                    sh 'terraform apply plan'
+                }
+            }
+            stage('Show') {
+                steps {
+                    sh "terraform show"
+                }
+            }   
+        }
+        post {
+            success {
+                echo 'Success!'
+            }
+     }
+}

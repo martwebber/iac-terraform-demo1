@@ -8,41 +8,55 @@ vpc_cidr_block = "10.0.0.0/18"
 public_subnet_cidr_block = "10.0.0.0/24"
 private_subnet_cidr_block = "10.0.1.0/24"
 security_group_description = "Allow TLS inbound traffic"
-security_group_tags = {
-    Name = "Demo security group"
-  }
-vpc_tags = {
-        Name = "Demo VPC 2"
-    }
-public_subnet_tags = {
-      Name = "Public Subnet"
-    }
+project = "iac-terraform-demo1"
+tags = {
+  "Environment"     = "UAT"
+  "Terraform"       = "true"
+  "sharedResource"  = "Yes"
+  "Owner"           = "DE Tribe"
+  "ManagedBy"       = "DevSecOps"
+  "BusinessOwner"   = ""
+  "Project"         = "IaC-terraform-demo1"
+  "CreatedBy"       = "Martin Mwangi"
+  "OrgBackupPolicy" = "None"
+  "CRQ"             = ""
+}
 
-private_subnet_tags = {
-      Name = "Private Subnet"
-    }
+# security_group_tags = {
+#     Name = "Demo security group"
+#   }
+# vpc_tags = {
+#         Name = "Demo VPC 2"
+#     }
+# public_subnet_tags = {
+#       Name = "Public Subnet"
+#     }
 
-internet_gateway_tags = {
-    Name = "Internet Gateway"
-  }
+# private_subnet_tags = {
+#       Name = "Private Subnet"
+#     }
 
-nat_gateway_eip_tags = {
-      Name = "NAT Gateway Elastic IP"
-    }
+# internet_gateway_tags = {
+#     Name = "Internet Gateway"
+#   }
 
-nat_gateway_tags = {
-    Name = "Main NAT Gateway"
-  }
+# nat_gateway_eip_tags = {
+#       Name = "NAT Gateway Elastic IP"
+#     }
 
-public_route_table_tags = {
-    Name = "Public Route Table"
-  }
+# nat_gateway_tags = {
+#     Name = "Main NAT Gateway"
+#   }
 
-private_route_table_tags = {
-    Name = "Private Route Table"
-  }
-ec2_instance_tags = {
-    Name = "Demo EC2 Instance"
-  }
+# public_route_table_tags = {
+#     Name = "Public Route Table"
+#   }
+
+# private_route_table_tags = {
+#     Name = "Private Route Table"
+#   }
+# ec2_instance_tags = {
+#     Name = "Demo EC2 Instance"
+#   }
 
 key_pair_name = "terraform-aws-keypair"

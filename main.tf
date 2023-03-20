@@ -1,39 +1,69 @@
 resource "aws_vpc" "demo_vpc" {
     cidr_block = var.vpc_cidr_block
-    tags = var.vpc_tags          
+    tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-vpc"
+    },
+  )          
 }
 
 resource "aws_subnet" "public_subnet" {
     vpc_id = aws_vpc.demo_vpc.id
     cidr_block = var.public_subnet_cidr_block
-    tags = var.public_subnet_tags
+    tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-public-subnet"
+    },
+  ) 
 }
 
 resource "aws_subnet" "private_subnet" {
     vpc_id = aws_vpc.demo_vpc.id
     cidr_block = var.private_subnet_cidr_block
-    tags = var.private_subnet_tags
+    tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-private-subnet"
+    },
+  ) 
 }
 
 # Internet gateway is used by the private subnet
 
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.demo_vpc.id
-  tags = var.internet_gateway_tags
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-internet-gateway"
+    },
+  ) 
 }
 
 # Elastic IP for NAT gateway
 resource "aws_eip" "nat_gateway_ip" {
     vpc = true
     depends_on = [aws_internet_gateway.internet_gateway]
-    tags = var.nat_gateway_eip_tags
+    tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-nat-gateway-eip"
+    },
+  ) 
 }
 
 # NAT gateway for VPC
 resource "aws_nat_gateway" "nat_gateway" {
   allocation_id = aws_eip.nat_gateway_ip.id
   subnet_id = aws_subnet.public_subnet.id
-  tags = var.nat_gateway_tags
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-nat-gateway"
+    },
+  ) 
 }
 
 # Routing table for public subnet
@@ -44,7 +74,12 @@ resource "aws_route_table" "public_route_table" {
     cidr_block = var.default_cidr_block
     gateway_id = aws_internet_gateway.internet_gateway.id
   }
-  tags = var.public_route_table_tags
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-public-route-table"
+    },
+  ) 
   
 }
 # Associate public subnet and publit route table
@@ -61,7 +96,12 @@ resource "aws_route_table" "private_route_table" {
     cidr_block = var.default_cidr_block
     gateway_id = aws_nat_gateway.nat_gateway.id
   }
-  tags = var.private_route_table_tags
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-private-route-table"
+    },
+  ) 
 }
 
 # Associate public subnet and publit route table
@@ -107,7 +147,12 @@ resource "aws_security_group" "demo_security_group" {
     cidr_blocks      = [var.default_cidr_block]
   }
 
-  tags = var.security_group_tags
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-security-group"
+    },
+  ) 
 }
 
 resource "aws_instance" "demo_ec2_instance" {
@@ -116,5 +161,10 @@ resource "aws_instance" "demo_ec2_instance" {
   subnet_id = aws_subnet.private_subnet.id
   vpc_security_group_ids = [aws_security_group.demo_security_group.id]
   key_name = var.key_pair_name
-  tags = var.ec2_instance_tags
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.region}-${var.project}-ec2-instance"
+    },
+  ) 
 }
