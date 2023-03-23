@@ -42,23 +42,23 @@ pipeline{
                 }
             }
 
-            stage('infracost') {
-                agent {
-                    docker {
-                        image 'infracost/infracost:ci-0.9'
-                            reuseNode true
-                            args "-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=''"
-                    }
-                }
-                // Set up any required credentials for posting the comment, e.g. GitHub token, GitLab token
-                    environment {
-                        INFRACOST_API_KEY = credentials('INFRACOST_API_KEY')
-                    }
-                    steps {
-                        // unstash 'tfplan_json'
-                        sh 'infracost breakdown --path tfplan.json --show-skipped --format html --out-file infracost.html'
-                    }
-            }
+//             stage('infracost') {
+//                 agent {
+//                     docker {
+//                         image 'infracost/infracost:ci-0.9'
+//                             reuseNode true
+//                             args "-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=''"
+//                     }
+//                 }
+//                 // Set up any required credentials for posting the comment, e.g. GitHub token, GitLab token
+//                     environment {
+//                         INFRACOST_API_KEY = credentials('INFRACOST_API_KEY')
+//                     }
+//                     steps {
+//                         // unstash 'tfplan_json'
+//                         sh 'infracost breakdown --path tfplan.json --show-skipped --format html --out-file infracost.html'
+//                     }
+//             }
             stage('Security Scan') {
                 agent {
                         docker {
