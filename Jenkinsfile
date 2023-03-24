@@ -71,7 +71,7 @@ pipeline{
                     script {
                                 sh "pipenv install"
                                 sh "pipenv run pip install checkov"
-                                sh "pipenv run checkov --directory /var/lib/jenkins/workspace/terraform_aws@2 -o junitxml > result.xml || true"
+                                sh "pipenv run checkov --directory /var/lib/jenkins/workspace/terraform_aws -o junitxml > result.xml || true"
                                 junit "result.xml"
                             }
                 }
